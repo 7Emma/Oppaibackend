@@ -29,10 +29,6 @@ app.use(express.static('public'));
 app.use(express.json({ limit: "10mb" })); // augmenter à 50mb
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
-// augmenter la limite (ex : 10mb)
-app.use(bodyParser.json({ limit: "10mb" }));
-app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
-
 // Connecter à la base de données
 connectDB();
 
