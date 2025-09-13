@@ -12,7 +12,7 @@ const newsRoutes = require("./routes/new");
 dotenv.config();
 const app = express();
 
-const allowedOrigin = "http://localhost:5173";
+const allowedOrigin = process.env.API_URL;
 
 app.use(
   cors({
