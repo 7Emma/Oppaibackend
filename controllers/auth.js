@@ -1,13 +1,15 @@
 const User = require("../models/User");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../utils/sendEmail");
 
-// Logique pour la connexion de l'utilisateur
+// Générer un code temporaire
+const generateCode = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
+
 exports.login = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, code } = req.body;
 
   try {
-    // 1. Chercher l'utilisateur par son nom d'utilisateur
     const user = await User.findOne({
       $or: [{ username }, { email: username }],
     });
@@ -16,40 +18,50 @@ exports.login = async (req, res) => {
       return res.status(404).json({ message: "Utilisateur non trouvé." });
     }
 
-    // 2. Comparer le mot de passe fourni avec le mot de passe haché
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Mot de passe incorrect." });
+    // Si aucun code envoyé, générer un nouveau code et l’envoyer
+    if (!code) {
+      const newCode = generateCode();
+      user.loginCode = newCode;
+      user.codeExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+      await user.save();
+
+      await sendEmail({
+        to: user.email,
+        subject: "Votre code de connexion Oppai",
+        text: `Votre code de connexion est : ${newCode}`,
+        html: `<p>Votre code de connexion est : <strong>${newCode}</strong></p>`,
+      });
+
+      return res.json({ message: "Code envoyé à votre email." });
     }
 
-    // 3. Si les informations sont correctes, créer un token JWT
-    const payload = {
+    // Vérifier le code
+    if (user.loginCode !== code || user.codeExpires < new Date()) {
+      return res.status(400).json({ message: "Code invalide ou expiré." });
+    }
+
+    // Créer le token JWT
+    const payload = { id: user._id, role: user.role };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    // Reset du code après validation
+    user.loginCode = null;
+    user.codeExpires = null;
+    await user.save();
+
+    res.json({
+      token,
       user: {
-        id: user.id,
+        id: user._id,
+        username: user.username,
+        email: user.email,
         role: user.role,
       },
-    };
-
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" },
-      (err, token) => {
-        if (err) throw err;
-
-        res.json({
-          token,
-          user: {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            role: user.role,
-          },
-        });
-      }
-    );
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Erreur de serveur.");
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur." });
   }
 };

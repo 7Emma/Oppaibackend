@@ -14,10 +14,10 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.1",
     "multer": "^2.0.2",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "sib-api-v3-sdk": "^8.5.0"
   },
-"scripts": {
-  "start": "node seed.js && node server.js"
-}
-
+  "scripts": {
+    "start": "node seed.js && node server.js"
+  }
 }
