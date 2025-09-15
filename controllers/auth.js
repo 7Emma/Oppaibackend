@@ -8,7 +8,7 @@ const generateCode = () =>
 
 exports.login = async (req, res) => {
   const { email, code } = req.body;
-  console.log("E-mail reçu:", email); // Ajoutez cette ligne pour le débogage
+  console.log("E-mail reçu:", email);
 
   try {
     const user = await User.findOne({ email });
@@ -25,7 +25,7 @@ exports.login = async (req, res) => {
       await sendEmail({
         to: user.email,
         code: newCode,
-        templateId: 2, // ton template
+        templateId: 2,
       });
 
       return res.json({ message: "Code envoyé à votre email." });
@@ -46,6 +46,68 @@ exports.login = async (req, res) => {
     );
 
     // Reset du code
+    user.loginCode = null;
+    user.codeExpires = null;
+    await user.save();
+
+    res.json({
+      token,
+      user: { id: user._id, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+};
+
+// Route séparée pour envoyer le code
+exports.sendCode = async (req, res) => {
+  const { email } = req.body;
+  console.log("Demande de code pour:", email);
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(404).json({ message: "Utilisateur non trouvé." });
+
+    const newCode = generateCode();
+    user.loginCode = newCode;
+    user.codeExpires = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save();
+
+    await sendEmail({
+      to: user.email,
+      code: newCode,
+      templateId: 2,
+    });
+
+    res.json({ message: "Code envoyé à votre email." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+};
+
+// Route séparée pour vérifier le code
+exports.verifyCode = async (req, res) => {
+  const { email, code } = req.body;
+  console.log("Vérification du code pour:", email);
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(404).json({ message: "Utilisateur non trouvé." });
+
+    if (user.loginCode !== code || user.codeExpires < new Date()) {
+      return res.status(400).json({ message: "Code invalide ou expiré." });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
     user.loginCode = null;
     user.codeExpires = null;
     await user.save();

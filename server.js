@@ -6,6 +6,7 @@ const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 const profileRoutes = require("./routes/profile");
 const newsRoutes = require("./routes/new");
+const publicationsRoutes = require("./routes/publications");
 
 // Initialiser l'application
 dotenv.config();
@@ -36,6 +37,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/news", newsRoutes);
+app.use("/api/publications", publicationsRoutes);
 
 // Démarrer le serveur
 const PORT = process.env.PORT || 5000;

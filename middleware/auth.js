@@ -12,7 +12,7 @@ module.exports = function (req, res, next) {
   // 3. Vérifier et décoder le token
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded.user;
+    req.user = decoded; // decoded contient déjà { id, role }
     next();
   } catch (e) {
     res.status(401).json({ message: 'Token non valide.' });
