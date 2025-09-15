@@ -1,49 +1,38 @@
-const nodemailer = require("nodemailer");
-const fs = require("fs");
-const path = require("path");
+const SibApiV3Sdk = require("sib-api-v3-sdk");
 require("dotenv").config();
 
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false, // STARTTLS
-  auth: {
-    user: process.env.BREVO_USER,
-    pass: process.env.BREVO_PASSWORD,
-  },
-});
+// Initialisation du client Brevo
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+const apiKey = defaultClient.authentications["api-key"];
+apiKey.apiKey = process.env.BREVO_API_KEY; // Ta clé API Brevo
+
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
 /**
- * Envoi d'email via Brevo avec template HTML
+ * Envoi d'un email transactionnel via un template Brevo
  * @param {Object} options
- * @param {string} options.to - Destinataire
- * @param {string} options.subject - Sujet du mail
- * @param {string} options.code - Code de vérification
+ * @param {string} options.to - Email du destinataire
  * @param {string} options.name - Nom du destinataire
+ * @param {string} options.code - Code de vérification
+ * @param {number} options.templateId - ID du template Brevo
  */
-const sendEmail = async ({ to, subject, code, name }) => {
+const sendEmail = async ({ to, name, code, templateId }) => {
   try {
-    // Lire le template HTML depuis le même dossier
-    const templatePath = path.join(__dirname, "brevo.html");
-    let html = fs.readFileSync(templatePath, "utf-8");
+    const sendSmtpEmail = {
+      to: [{ email: to, name }],
+      templateId,
+      params: {
+        name,
+        code,
+      },
+    };
 
-    // Remplacer les variables dynamiques utilisées dans Brevo
-    html = html
-      .replace(/{{params.name}}/g, name)
-      .replace(/{{params.code}}/g, code);
-
-    const info = await transporter.sendMail({
-      from: `"Oppai" <${process.env.BREVO_USER}>`,
-      to,
-      subject,
-      html,
-    });
-
-    console.log("Email envoyé :", info.messageId);
-    return info;
-  } catch (err) {
-    console.error("Erreur envoi email :", err);
-    throw err;
+    const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("Email envoyé avec succès :", data.messageId);
+    return data;
+  } catch (error) {
+    console.error("Erreur lors de l'envoi d'email :", error);
+    throw error;
   }
 };
 

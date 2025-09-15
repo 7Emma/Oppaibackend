@@ -27,10 +27,11 @@ exports.login = async (req, res) => {
 
       await sendEmail({
         to: user.email,
-        subject: "Votre code de connexion Oppai",
-        code: newCode,
         name: user.username,
+        code: newCode,
+        templateId: 2, // correspond à "OppaiCdev"
       });
+
       console.log("Email destinataire :", user.email);
 
       return res.json({ message: "Code envoyé à votre email." });
