@@ -6,8 +6,6 @@ const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 const profileRoutes = require("./routes/profile");
 const newsRoutes = require("./routes/new");
-const sendEmail = require("./sendEmail.js");
-
 
 // Initialiser l'application
 dotenv.config();
