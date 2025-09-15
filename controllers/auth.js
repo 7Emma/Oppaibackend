@@ -31,6 +31,7 @@ exports.login = async (req, res) => {
         code: newCode,
         name: user.username,
       });
+      console.log("Email destinataire :", user.email);
 
       return res.json({ message: "Code envoyé à votre email." });
     }
