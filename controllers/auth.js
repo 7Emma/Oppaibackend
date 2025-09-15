@@ -7,18 +7,14 @@ const generateCode = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
 exports.login = async (req, res) => {
-  const { username, code } = req.body;
+  const { email, code } = req.body;
 
   try {
-    const user = await User.findOne({
-      $or: [{ username }, { email: username }],
-    });
-
-    if (!user) {
+    const user = await User.findOne({ email });
+    if (!user)
       return res.status(404).json({ message: "Utilisateur non trouvé." });
-    }
 
-    // Si aucun code envoyé, générer un nouveau code et l’envoyer
+    // Si pas de code fourni, générer et envoyer le code
     if (!code) {
       const newCode = generateCode();
       user.loginCode = newCode;
@@ -27,40 +23,35 @@ exports.login = async (req, res) => {
 
       await sendEmail({
         to: user.email,
-        name: user.username,
         code: newCode,
-        templateId: 2, // correspond à "OppaiCdev"
+        templateId: 2, // ton template
       });
-
-      console.log("Email destinataire :", user.email);
 
       return res.json({ message: "Code envoyé à votre email." });
     }
 
-    // Vérifier le code
+    // Vérification du code
     if (user.loginCode !== code || user.codeExpires < new Date()) {
       return res.status(400).json({ message: "Code invalide ou expiré." });
     }
 
-    // Créer le token JWT
-    const payload = { id: user._id, role: user.role };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
+    // Création du token JWT
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      }
+    );
 
-    // Reset du code après validation
+    // Reset du code
     user.loginCode = null;
     user.codeExpires = null;
     await user.save();
 
     res.json({
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-      },
+      user: { id: user._id, email: user.email, role: user.role },
     });
   } catch (err) {
     console.error(err);
