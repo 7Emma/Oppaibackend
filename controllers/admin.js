@@ -2,7 +2,7 @@ const User = require("../models/User");
 
 // Fonction pour l'enregistrement d'un nouveau développeur
 exports.registerDeveloper = async (req, res) => {
-  const { email, password } = req.body;
+  const { email } = req.body;
 
   try {
     let user = await User.findOne({ email });
@@ -15,7 +15,6 @@ exports.registerDeveloper = async (req, res) => {
     user = new User({
       username,
       email,
-      password,
       role: "developer",
     });
 

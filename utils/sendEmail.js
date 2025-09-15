@@ -1,28 +1,38 @@
-// backend/utils/sendEmail.js
-const SibApiV3Sdk = require("sib-api-v3-sdk");
-const dotenv = require("dotenv");
-dotenv.config();
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
-const client = SibApiV3Sdk.ApiClient.instance;
-const apiKey = client.authentications["api-key"];
-apiKey.apiKey = process.env.BREVO_API_KEY; // ajoute BREVO_API_KEY dans .env
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false, // STARTTLS
+  auth: {
+    user: process.env.BREVO_USER, // identifiant Brevo
+    pass: process.env.BREVO_PASSWORD, // mot de passe SMTP Brevo
+  },
+});
 
+/**
+ * Envoi d'email via Brevo
+ * @param {Object} options
+ * @param {string} options.to - Destinataire
+ * @param {string} options.subject - Sujet du mail
+ * @param {string} options.text - Version texte
+ * @param {string} options.html - Version HTML
+ */
 const sendEmail = async ({ to, subject, text, html }) => {
-  const tranEmailApi = new SibApiV3Sdk.TransactionalEmailsApi();
-
-  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail({
-    to: [{ email: to }],
-    sender: { email: process.env.BREVO_SENDER_EMAIL, name: "Oppai" },
-    subject,
-    textContent: text,
-    htmlContent: html,
-  });
-
   try {
-    await tranEmailApi.sendTransacEmail(sendSmtpEmail);
-    console.log(`Email envoyé à ${to}`);
-  } catch (error) {
-    console.error("Erreur d'envoi email:", error);
+    const info = await transporter.sendMail({
+      from: `"Oppai" <${process.env.BREVO_USER}>`, // expéditeur
+      to,
+      subject,
+      text,
+      html,
+    });
+    console.log("Email envoyé :", info.messageId);
+    return info;
+  } catch (err) {
+    console.error("Erreur envoi email :", err);
+    throw err;
   }
 };
 
