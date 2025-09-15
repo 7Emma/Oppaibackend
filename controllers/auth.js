@@ -29,7 +29,7 @@ exports.login = async (req, res) => {
         to: user.email,
         subject: "Votre code de connexion Oppai",
         code: newCode,
-        username: user.username,
+        name: user.username,
       });
 
       return res.json({ message: "Code envoyé à votre email." });
