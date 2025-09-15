@@ -1,20 +1,15 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Code de vérification</title>
-  </head>
-  <body>
-    <p>Cher {{name}},</p>
-    <p>Bienvenu Champion sur <strong>Oppai</strong>.</p>
-    <p>Voici votre code de vérification : <strong>{{code}}</strong></p>
-    <p>⚠️ Ce code est valable uniquement 10 minutes.</p>
-    <p>
-      Si vous n’êtes pas à l’origine de cette demande, ignorez simplement cet
-      email.
-    </p>
-    <p>
-      <i><strong>L’équipe Oppai</strong></i>
-    </p>
-  </body>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Code de vérification</title>
+</head>
+<body>
+  <p>Cher {{params.name}},</p>
+  <p>Bienvenue Champion sur <strong>Oppai</strong>.</p>
+  <p>Voici votre code de vérification : <strong>{{params.code}}</strong></p>
+  <p>⚠️ Ce code est valable uniquement 10 minutes.</p>
+  <p>Si vous n’êtes pas à l’origine de cette demande, ignorez simplement cet email.</p>
+  <p><i>L’équipe Oppai</i></p>
+</body>
 </html>

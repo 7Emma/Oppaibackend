@@ -27,8 +27,10 @@ const sendEmail = async ({ to, subject, code, name }) => {
     const templatePath = path.join(__dirname, "brevo.html");
     let html = fs.readFileSync(templatePath, "utf-8");
 
-    // Remplacer les variables dynamiques
-    html = html.replace(/{{name}}/g, name).replace(/{{code}}/g, code);
+    // Remplacer les variables dynamiques utilisées dans Brevo
+    html = html
+      .replace(/{{params.name}}/g, name)
+      .replace(/{{params.code}}/g, code);
 
     const info = await transporter.sendMail({
       from: `"Oppai" <${process.env.BREVO_USER}>`,
