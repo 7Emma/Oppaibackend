@@ -1,4 +1,6 @@
 const nodemailer = require("nodemailer");
+const fs = require("fs");
+const path = require("path");
 require("dotenv").config();
 
 const transporter = nodemailer.createTransport({
@@ -6,32 +8,35 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false, // STARTTLS
   auth: {
-    user: process.env.BREVO_USER, // identifiant Brevo
-    pass: process.env.BREVO_PASSWORD, // mot de passe SMTP Brevo
+    user: process.env.BREVO_USER,
+    pass: process.env.BREVO_PASSWORD,
   },
 });
 
 /**
- * Envoi d'email via Brevo
+ * Envoi d'email via Brevo avec template HTML
  * @param {Object} options
  * @param {string} options.to - Destinataire
  * @param {string} options.subject - Sujet du mail
- * @param {string} options.text - Version texte
- * @param {string} options.html - Version HTML
+ * @param {string} options.code - Code de vérification
+ * @param {string} options.name - Nom du destinataire
  */
-const sendEmail = async ({ to, subject, text, html }) => {
+const sendEmail = async ({ to, subject, code, name }) => {
   try {
+    // Lire le template HTML depuis le même dossier
+    const templatePath = path.join(__dirname, "brevo.html");
+    let html = fs.readFileSync(templatePath, "utf-8");
+
+    // Remplacer les variables dynamiques
+    html = html.replace(/{{name}}/g, name).replace(/{{code}}/g, code);
+
     const info = await transporter.sendMail({
-      from: `"Oppai" <${process.env.BREVO_USER}>`, // expéditeur
+      from: `"Oppai" <${process.env.BREVO_USER}>`,
       to,
       subject,
-      text,
-      html: `
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="format-detection" content="telephone=no"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Votre code vérification</title><style type="text/css" emogrify="no">#outlook a { padding:0; } .ExternalClass { width:100%; } .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div { line-height: 100%; } table td { border-collapse: collapse; mso-line-height-rule: exactly; } .editable.image { font-size: 0 !important; line-height: 0 !important; } .nl2go_preheader { display: none !important; mso-hide:all !important; mso-line-height-rule: exactly; visibility: hidden !important; line-height: 0px !important; font-size: 0px !important; } body { width:100% !important; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; margin:0; padding:0; } img { outline:none; text-decoration:none; -ms-interpolation-mode: bicubic; } a img { border:none; } table { border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt; } th { font-weight: normal; text-align: left; } *[class="gmail-fix"] { display: none !important; } </style><style type="text/css" emogrify="no"> @media (max-width: 600px) { .gmx-killpill { content: ' \03D1';} } </style><style type="text/css" emogrify="no">@media (max-width: 600px) { .gmx-killpill { content: ' \03D1';} .r0-o { border-style: solid !important; margin: 0 auto 0 0 !important; width: 100% !important } .r1-i { background-color: #ffffff !important } .r2-c { box-sizing: border-box !important; text-align: center !important; valign: top !important; width: 100% !important } .r3-o { border-style: solid !important; margin: 0 auto 0 auto !important; width: 100% !important } .r4-i { padding-left: 0px !important; padding-right: 0px !important; padding-top: 20px !important } .r5-c { box-sizing: border-box !important; display: block !important; valign: top !important; width: 100% !important } .r6-o { border-style: solid !important; width: 100% !important } .r7-c { box-sizing: border-box !important; text-align: left !important; valign: top !important; width: 100% !important } .r8-c { box-sizing: border-box !important; padding-top: 15px !important; text-align: left !important; valign: top !important; width: 100% !important } .r9-c { box-sizing: border-box !important; padding-top: 30px !important; text-align: left !important; valign: top !important; width: 100% !important } body { -webkit-text-size-adjust: none } .nl2go-responsive-hide { display: none } .nl2go-body-table { min-width: unset !important } .mobshow { height: auto !important; overflow: visible !important; max-height: unset !important; visibility: visible !important } .resp-table { display: inline-table !important } .magic-resp { display: table-cell !important } } </style><style type="text/css">p, h1, h2, h3, h4, ol, ul, li { margin: 0; } .nl2go-default-textstyle { color: #3b3f44; font-family: arial,helvetica,sans-serif; font-size: 16px; line-height: 1.5; word-break: break-word } .default-button { color: #ffffff; font-family: arial,helvetica,sans-serif; font-size: 16px; font-style: normal; font-weight: normal; line-height: 1.15; text-decoration: none; word-break: break-word } a, a:link { color: #696969; text-decoration: underline } .default-heading1 { color: #1F2D3D; font-family: arial,helvetica,sans-serif; font-size: 36px; font-weight: 400; word-break: break-word } .default-heading2 { color: #1F2D3D; font-family: arial,helvetica,sans-serif; font-size: 32px; font-weight: 400; word-break: break-word } .default-heading3 { color: #1F2D3D; font-family: arial,helvetica,sans-serif; font-size: 24px; font-weight: 400; word-break: break-word } .default-heading4 { color: #1F2D3D; font-family: arial,helvetica,sans-serif; font-size: 18px; font-weight: 400; word-break: break-word } a[x-apple-data-detectors] { color: inherit !important; text-decoration: inherit !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; } .no-show-for-you { border: none; display: none; float: none; font-size: 0; height: 0; line-height: 0; max-height: 0; mso-hide: all; overflow: hidden; table-layout: fixed; visibility: hidden; width: 0; } </style><!--[if mso]><xml> <o:OfficeDocumentSettings> <o:AllowPNG/> <o:PixelsPerInch>96</o:PixelsPerInch> </o:OfficeDocumentSettings> </xml><![endif]--><style type="text/css">a:link{color: #696969; text-decoration: underline;}</style></head><body bgcolor="#ffffff" text="#3b3f44" link="#696969" yahoo="fix" style="background-color: #ffffff;"> <table cellspacing="0" cellpadding="0" border="0" role="presentation" class="nl2go-body-table" width="100%" style="background-color: #ffffff; width: 100%;"><tr><td> <table cellspacing="0" cellpadding="0" border="0" role="presentation" width="100%" align="left" class="r0-o" style="table-layout: fixed; width: 100%;"><tr><td valign="top" class="r1-i" style="background-color: #ffffff;"> <table cellspacing="0" cellpadding="0" border="0" role="presentation" width="100%" align="center" class="r3-o" style="table-layout: fixed; width: 100%;"><tr><td class="r4-i" style="padding-top: 20px;"> <table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation"><tr><th width="100%" valign="top" class="r5-c" style="font-weight: normal;"> <table cellspacing="0" cellpadding="0" border="0" role="presentation" width="100%" align="left" class="r0-o" style="table-layout: fixed; width: 100%;"><tr><td valign="top"> <table width="100%" cellspacing="0" cellpadding="0" border="0" role="presentation"><tr><td class="r7-c nl2go-default-textstyle" align="left" style="color: #3b3f44; font-family: arial,helvetica,sans-serif; font-size: 16px; line-height: 1.5; word-break: break-word; text-align: left; valign: top;"> <div><p style="margin: 0;">Cher {{params.name}},</p></div> </td> </tr><tr><td class="r8-c nl2go-default-textstyle" align="left" style="color: #3b3f44; font-family: arial,helvetica,sans-serif; font-size: 16px; line-height: 1.5; word-break: break-word; padding-top: 15px; text-align: left; valign: top;"> <div><p style="margin: 0;">Bienvenu Champion sur <strong>Oppai</strong>.</p><p style="margin: 0;">Voici votre code de vérification : {{params.code}}</p><p style="margin: 0;">⚠️ Ce code est valable uniquement 10 minutes.</p><p style="margin: 0;">Si vous n’êtes pas à l’origine de cette demande, ignorez simplement cet email.</p><p style="margin: 0;"> </p><p style="margin: 0;"><i><strong>L’équipe Oppai</strong></i></p></div> </td> </tr><tr><td class="r9-c nl2go-default-textstyle" align="left" style="color: #3b3f44; font-family: arial,helvetica,sans-serif; font-size: 16px; line-height: 1.5; word-break: break-word; padding-top: 30px; text-align: left; valign: top;"> <div><p style="margin: 0;"><a href="{{ unsubscribe }}" style="color: #696969; text-decoration: underline;">Cliquez ici pour vous désinscrire</a></p></div> </td> </tr></table></td> </tr></table></th> </tr></table></td> </tr></table></td> </tr></table></td> </tr></table></body></html>
-
-`,
+      html,
     });
+
     console.log("Email envoyé :", info.messageId);
     return info;
   } catch (err) {
