@@ -8,6 +8,7 @@ const generateCode = () =>
 
 exports.login = async (req, res) => {
   const { email, code } = req.body;
+  console.log("E-mail reçu:", email); // Ajoutez cette ligne pour le débogage
 
   try {
     const user = await User.findOne({ email });
