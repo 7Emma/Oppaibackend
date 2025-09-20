@@ -4,8 +4,9 @@ const ProfileDevSchema = new mongoose.Schema({
   // L'ID de l'utilisateur auquel ce profil est lié
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
+    ref: "User",
     required: true,
+    unique: true,
   },
   name: {
     type: String,
@@ -16,7 +17,7 @@ const ProfileDevSchema = new mongoose.Schema({
     required: true,
   },
   image: {
-    type: String, 
+    type: String,
     required: true,
   },
   technologies: {
@@ -37,6 +38,12 @@ const ProfileDevSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
+    validate: {
+      validator: function (v) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      },
+      message: "Format d'email invalide",
+    },
   },
   github: {
     type: String,
@@ -47,10 +54,13 @@ const ProfileDevSchema = new mongoose.Schema({
   projects: {
     type: Number,
     required: true,
+    min: [0, "Le nombre de projets ne peut pas être négatif"],
   },
   rating: {
     type: Number,
     required: true,
+    min: [0, "La note ne peut pas être inférieure à 0"],
+    max: [5, "La note ne peut pas être supérieure à 5"],
   },
   gradient: {
     type: String,

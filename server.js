@@ -12,22 +12,41 @@ const publicationsRoutes = require("./routes/publications");
 dotenv.config();
 const app = express();
 
-const allowedOrigin = process.env.API_URL || "http://localhost:5173";
+// Configuration CORS pour le développement et la production
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://oppai-collective.vercel.app",
+  "https://oppai-collective.netlify.app",
+  process.env.API_URL,
+].filter(Boolean);
 
 app.use(
   cors({
-    origin: allowedOrigin,
+    origin: function (origin, callback) {
+      // Autoriser les requêtes sans origine (mobile apps, postman, etc.)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // En développement, autoriser toutes les origines
+      if (process.env.NODE_ENV === "development") {
+        return callback(null, true);
+      }
+
+      callback(new Error("Non autorisé par CORS"));
+    },
     credentials: true,
   })
 );
 
-// Middleware pour parser les requêtes JSON
-app.use(express.json({ extended: false }));
-app.use(express.static("public"));
-
 // Middleware pour parser les requêtes JSON et urlencoded
-app.use(express.json({ limit: "10mb" })); // augmenter à 50mb
-app.use(express.urlencoded({ limit: "10mb", extended: true }));
+app.use(express.json({ limit: "50mb" })); // augmenter à 50mb
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+// Servir les fichiers statiques
+app.use(express.static("public"));
 
 // Connecter à la base de données
 connectDB();
