@@ -17,6 +17,11 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "developer"],
       default: "developer",
     },
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
     loginCode: String, // code temporaire pour login
     codeExpires: Date, // expiration du code
   },

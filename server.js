@@ -12,7 +12,7 @@ const publicationsRoutes = require("./routes/publications");
 dotenv.config();
 const app = express();
 
-const allowedOrigin = process.env.API_URL;
+const allowedOrigin = process.env.API_URL || "http://localhost:5173";
 
 app.use(
   cors({
@@ -23,7 +23,7 @@ app.use(
 
 // Middleware pour parser les requêtes JSON
 app.use(express.json({ extended: false }));
-app.use(express.static('public'));
+app.use(express.static("public"));
 
 // Middleware pour parser les requêtes JSON et urlencoded
 app.use(express.json({ limit: "10mb" })); // augmenter à 50mb
