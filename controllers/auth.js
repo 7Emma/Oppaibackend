@@ -66,7 +66,16 @@ exports.sendCode = async (req, res) => {
   console.log("Demande de code pour:", email);
 
   try {
+    // Debug: Lister tous les utilisateurs
+    const allUsers = await User.find({});
+    console.log(
+      "Tous les utilisateurs dans la DB:",
+      allUsers.map((u) => u.email)
+    );
+
     const user = await User.findOne({ email });
+    console.log("Utilisateur trouvé:", user ? user.email : "AUCUN");
+
     if (!user)
       return res.status(404).json({ message: "Utilisateur non trouvé." });
 

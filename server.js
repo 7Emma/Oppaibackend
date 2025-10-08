@@ -49,6 +49,9 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(express.static("public"));
 
 // Connecter à la base de données
+// Utiliser la base de données Oppai (avec majuscule)
+process.env.MONGODB_URI =
+  process.env.MONGODB_URI || "mongodb://localhost:27017/Oppai";
 connectDB();
 
 // Définir les routes
